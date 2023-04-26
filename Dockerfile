@@ -8,9 +8,9 @@ ARG yapb_version=4.3.734
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN apt-get update -y
-
-RUN apt-get install -y lib32gcc-s1 curl unzip xz-utils
+RUN apt-get update -y \
+ && apt-get install -y lib32gcc-s1 samba curl unzip xz-utils \
+ && apt-get autoremove -y
 
 WORKDIR /opt/steam
 
@@ -61,9 +61,8 @@ RUN curl -sqL "https://www.amxmodx.org/release/amxmodx-${amxmodx_version}-base-l
 RUN curl -sqL "https://github.com/yapb/yapb/releases/download/${yapb_version}/yapb-${yapb_version}-linux.tar.xz" | tar -C hlds/cstrike -Jxvf - \
  && echo 'linux addons/yapb/bin/yapb.so' >> hlds/cstrike/addons/metamod/plugins.ini
 
-# Install SAMBA
-RUN apt-get install -y samba \
- && echo '[hlds]' >> /etc/samba/smb.conf \
+# Prepare SAMBA share
+RUN echo '[hlds]' >> /etc/samba/smb.conf \
  && echo '   comment = HLDS Folder' >> /etc/samba/smb.conf \
  && echo '   force create mode = 0660' >> /etc/samba/smb.conf \
  && echo '   force directory mode = 0660' >> /etc/samba/smb.conf \
@@ -72,9 +71,6 @@ RUN apt-get install -y samba \
  && echo '   read only = no' >> /etc/samba/smb.conf \
  && echo '   browseable = yes' >> /etc/samba/smb.conf \
  && echo '   valid users = steam' >> /etc/samba/smb.conf
-
-RUN apt-get autoremove -y \
- && rm -rf /var/lib/apt/lists/*
 
 COPY startup.sh startup.sh
 
